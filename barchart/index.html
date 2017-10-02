@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<head>	
+    <meta charset="utf-8"> 
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+<h1>Разпределение на издадените пълнометражни филми от България от 2011 до 2016 година</h1>
+    <div id="chart"></div>
+
+<script>
+    var main_color = '#FEC51D';
+    
+    var data_movies_all = [];
+    var width = 620;
+	var padding = 50;
+    var height = 510;
+    var height_for_bars = height - 110;
+    var formatAsPercentage = d3.format(".1%");
+    
+    var svg = d3.select("#chart").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("tranform", "translate(100,100)");
+    
+    d3.csv('data_movies.csv', function(dataset) {
+        data = dataset;
+        
+        data_movies_all = d3.sum(data, function(d) {return parseInt(d.movies); }); // Parse to int in case of it tries to sum strings
+        createBarChart();
+        addHoverLegend();
+    });
+    
+    var createBarChart = function() {
+        var x = d3.scale.ordinal().domain(data.map(function (d) {
+            return d.year;
+        })).rangeRoundBands([0, width - padding], .05);
+        
+        var max_movies = d3.max(data, function (d) { return parseInt(d.movies); } );
+        var y = d3.scale.linear().domain([0, max_movies]).range([height_for_bars - 25, 5]);
+
+        //Create group for svg elements, containing the bars
+        var bars_wrappers = svg.selectAll("bar")
+        .data(data)
+        .enter()
+        .append("g");
+
+        //Create the rectangles (bars)
+        bars_wrappers.append("rect")
+        .style("fill", main_color)
+        .attr({
+            "x": function (d) { return x(d.year) + padding; },
+            "width": x.rangeBand(), 
+            "y": function (d) { return y(d.movies); }, 
+            "height": function (d) { return height_for_bars - y(d.movies); }
+        })
+        .append("text")
+        .attr({
+            "dy": ".75em", 
+            "y": 6, 
+            "x": function (d) { return x(d.year); },
+            "text-anchor": "middle"
+        })
+        .text(function (d) {
+            return (d.movies);
+        });
+
+        //Bar text values
+        bars_wrappers.append("text")
+        .attr({
+            "dy": ".85em",
+            "y": function (d) { return y(d.movies) - 15; },
+            "x": function (d) { return x(d.year) + x.rangeBand() / 2 + padding; },
+            "text-anchor": "middle", 
+            "font-size": "16px", 
+            "font-family": "sans-serif"
+        })
+        .text(function (d) {
+            return (d.movies);
+        });
+
+        //Bars hover lines (use for legend)
+        bars_wrappers.append("line")
+        .attr({
+            "class": "legend", 
+            "x1": function (d) { return x(d.year) + padding; },
+            "y1": function(d) { return height - 25; },
+            "x2": width,
+            "y2": function(d) { return height - 25; },
+            "stroke-width": 2, 
+            "stroke": "#F15B39"
+        });
+
+        //Bars hover text (use for legend). Count the remaining percantage of values
+        var sum_till_now = 0;
+        var percent_till_now = 0;
+        var rest_data_percent = 0;
+        bars_wrappers
+        .append("text")
+        .attr({
+            "class": "legend",
+            "dy": ".85em",
+            "y": function(d) { return height - 15; },
+            "x": width / 2,
+            "text-anchor": "middle",
+            "font-size": "16px",
+            "font-family": "sans-serif"
+        })
+        .text(function(d) {
+            percent_till_now = sum_till_now / data_movies_all;
+            rest_data_percent = 1 - percent_till_now;
+            sum_till_now += parseInt(d.movies);
+//            return formatAsPercentage(rest_data_percent);
+			return (data_movies_all - sum_till_now) + " филма от " + d.year + " до " + data[data.length - 1].year;
+        });
+        
+        
+        // Construct axises
+        var xAxis = d3.svg.axis()
+        .scale(x) 
+        .orient("bottom");
+
+        var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .ticks(10);
+
+        svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(" + padding + "," + (height_for_bars + 20) + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr({
+            "dx": "-.8em", 
+            "dy": "-.55em", 
+            "transform": "rotate(-90)"
+        });
+
+        svg.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(40,20)")
+        .call(yAxis)
+        .append("text")
+        .attr({
+//            "transform": "rotate(-90)", 
+            "y": 6,
+            "dy": ".71em"
+        })
+        .style({
+            "text-anchor": "end", 
+            "fill": "#58595B"
+        });
+
+        // X Axis legend on the bottom of the chart
+        svg.selectAll("bar")
+        .data([{"cx": 0, "cy": 0}])
+        .enter()
+        .append("text")
+        .attr({
+            dy: ".85em",
+            y: 0,
+            x: - (height / 2 + 50),
+            "text-anchor": "",
+            "font-size": "16px",
+            "font-family": "sans-serif",
+            "transform": "rotate(-90)",
+            "class": "shadow"
+        })
+        .text('Брой филми за всяка година');
+
+        // Y Axis legend on the left of the chart
+        svg.selectAll("bar")
+        .data([{"cx": 0, "cy": 0}])
+        .enter()
+        .append("text")
+        .attr({
+            "dy": ".85em", 
+            "y": height_for_bars, 
+            "x": (width / 2), 
+            "text-anchor": "middle", 
+            "font-size": "16px", 
+            "font-family": "sans-serif", 
+            "class": "shadow"
+        })
+        .text('Години');
+    };
+    
+    var addHoverLegend = function () {
+        svg.selectAll("rect").on('mouseover', function(d, i){
+            d3.select(this)
+                .transition()
+                .style("fill", "#F15B39");
+        
+            svg.selectAll("line.legend")
+            .classed("selected", function(e, j) {
+                return i === j;
+            });
+                
+            svg.selectAll("text.legend")
+            .classed("selected", function(e, j) {
+                return i === j;
+            });
+        });
+        
+        svg.selectAll("rect").on('mouseout', function(){
+            d3.select(this)
+                .transition()
+                .style("fill", main_color);
+        
+            svg.selectAll("text.legend")
+            .classed("selected", function(e, j) {
+                return false;
+            });
+                
+            svg.selectAll("line.legend")
+            .classed("selected", function(e, j) {
+                return false;
+            });
+        });
+    };
+    </script>
+    
+</body>
+</html>

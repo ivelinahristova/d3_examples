@@ -1,0 +1,32 @@
+.axis {
+    font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+line.legend {
+    display: none;
+    z-index: 9999;
+}
+
+line.legend.selected {
+    display: block;
+}
+
+text.legend {
+    display: none;
+    z-index: 9999;
+}
+
+text.legend.selected {
+    display: block;
+}
+
+#chart {
+    padding: 50px;
+}
