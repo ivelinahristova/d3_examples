@@ -192,6 +192,7 @@
         svg.selectAll("rect").on('mouseover', function(d, i){
             d3.select(this)
                 .transition()
+                .delay(function(d, i) { return 50; }) .duration(300) 
                 .style("fill", "#F15B39");
 
             svg.selectAll("line.legend")
