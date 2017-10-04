@@ -7,7 +7,7 @@
 
 <body>
 <h1>Разпределение на издадените пълнометражни филми от България от 2011 до 2016 година</h1>
-    <div id="chart"></div>
+<div id="chart"></div>
 
 <script>
     var main_color = '#FEC51D';
@@ -192,7 +192,7 @@
         svg.selectAll("rect").on('mouseover', function(d, i){
             d3.select(this)
                 .transition()
-                .delay(function(d, i) { return 50; }) .duration(300) 
+                .delay(function(d, i) { return 50; }) .duration(300)
                 .style("fill", "#F15B39");
 
             svg.selectAll("line.legend")

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <head>
     <meta charset="utf-8">
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
     <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -11,18 +11,20 @@
 
 <script>
     var data = [];
-
+    var data_json = {
+      "nodes": [],
+      "links": []
+    };
+    var width = 900;
+    var height = 500;
     var svg = d3.select("#chart").append("svg")
-        .attr("width", 900)
-        .attr("height", 500)
+        .attr("width", width)
+        .attr("height", height)
         .append("g");
 
     d3.csv('twin_cities.csv', function(dataset){
       data = dataset;
-      var data_json = {
-        "nodes": [],
-        "links": []
-      };
+
       for (var i = 0; i < data.length; i++) {
         console.log(data[i]);
         console.log(data[i]['Name']);
@@ -42,32 +44,82 @@
       createForceLayoutChart();
     });
 
-    var createForceLayoutChart = function() {
-      console.log(data);
-      var force = d3.layout.force()
-      .nodes(data.nodes)
-      .links(data.edges)
-      .size([w, h])
-      .linkDistance([50])
-      .charge([-100])
-      .start();
+      var createForceLayoutChart = function() {
+      console.log(1);
+      console.log(data_json.nodes);
+      var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-      var edges = svg.selectAll("line")
-      .data(dataset.edges)
-      .enter()
-      .append("line")
-      .style("stroke", "#ccc")
-      .style("stroke-width", 1);
+      var simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d) {return d.value;}).strength(0.1))
+      // .force("link", d3.forceLink())
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter());
 
-      var nodes = svg.selectAll("circle")
-      .data(dataset.nodes)
-      .enter()
-      .append("circle")
-      .attr("r", 10)
-      .style("fill", function(d, i) {
-        return colors(i);
-      })
-      .call(force.drag);
+console.log(2);
+console.log(simulation);
+
+
+var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(data_json.links)
+    .enter().append("line")
+      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+// simulation.force('link', d3.forceLink(data_json.links).id(function(d) { return d.value; }));
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("circle")
+
+    .data(data_json.nodes)
+    .enter().append("circle")
+    // .attr("r", function(d) { return d.radius; })
+      .attr("r", 20)
+      .attr("fill", function(d) { return color(d.group); });
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(data_json.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(data_json.links);
+
+      function ticked() {
+          link
+              .attr("x1", function(d) { return d.source.x; })
+              .attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; })
+              .attr("y2", function(d) { return d.target.y; });
+
+          node
+              .attr("cx", function(d) { return d.x; })
+              .attr("cy", function(d) { return d.y; });
+        }
+    }
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
     }
 
 </script>
