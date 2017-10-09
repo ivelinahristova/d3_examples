@@ -15,8 +15,8 @@
       "nodes": [],
       "links": []
     };
-    var width = 900;
-    var height = 500;
+    var width = 1000;
+    var height = 1000;
     var svg = d3.select("#chart").append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -26,9 +26,6 @@
       data = dataset;
 
       for (var i = 0; i < data.length; i++) {
-        console.log(data[i]);
-        console.log(data[i]['Name']);
-
         for (var k in data[i]){
             if (data[i].hasOwnProperty(k)) {
                  console.log("Key is " + k + ", value is" + data[i][k]);
@@ -40,24 +37,18 @@
 
         data_json["nodes"].push({"id": data[i]['Name']});
       }
-      console.log(data_json);
       createForceLayoutChart();
     });
 
       var createForceLayoutChart = function() {
-      console.log(1);
-      console.log(data_json.nodes);
       var color = d3.scaleOrdinal(d3.schemeCategory20);
 
       var simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d) {return d.value;}).strength(0.1))
+      .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d) {return 350;}).strength(0.5))
       // .force("link", d3.forceLink())
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter());
-
-console.log(2);
-console.log(simulation);
-
+      .force("charge", function(d, i) { return i==0 ? -10000 : -500; })
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .nodes(data_json.nodes);
 
 var link = svg.append("g")
       .attr("class", "links")
@@ -66,60 +57,71 @@ var link = svg.append("g")
     .enter().append("line")
       .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-// simulation.force('link', d3.forceLink(data_json.links).id(function(d) { return d.value; }));
+simulation
+    .nodes(data_json.nodes)
+    .on("tick", ticked);
 
-  var node = svg.append("g")
-      .attr("class", "nodes")
-    .selectAll("circle")
+  var node = svg.selectAll("g.node")
+      .data(data_json.nodes, function(d) { return d.id; });
 
-    .data(data_json.nodes)
-    .enter().append("circle")
-    // .attr("r", function(d) { return d.radius; })
-      .attr("r", 20)
-      .attr("fill", function(d) { return color(d.group); });
+  var inNode = node.enter().append("svg:g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
       .call(d3.drag()
-          .on("start", dragstarted)
-          .on("drag", dragged)
-          .on("end", dragended));
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended));
+
+  inNode.append("svg:circle")
+      .attr("r", function(d) { return 20; })
+      .style("fill", "#eee");
+
+  var images = inNode.append("svg:image")
+        .attr("xlink:href",  function(d) { return "flags/" + d.id + ".png";})
+        .attr("x", function(d) { console.log(JSON.stringify(d)); return -25;})
+        .attr("y", function(d) { return -25;})
+        .attr("height", 50)
+        .attr("width", 50);
 
   node.append("title")
       .text(function(d) { return d.id; });
 
-  simulation
-      .nodes(data_json.nodes)
-      .on("tick", ticked);
-
   simulation.force("link")
       .links(data_json.links);
-
+node = svg.selectAll("g.node");
       function ticked() {
+
           link
-              .attr("x1", function(d) { return d.source.x; })
+              .attr("x1", function(d) {return d.source.x; })
               .attr("y1", function(d) { return d.source.y; })
               .attr("x2", function(d) { return d.target.x; })
               .attr("y2", function(d) { return d.target.y; });
 
           node
-              .attr("cx", function(d) { return d.x; })
-              .attr("cy", function(d) { return d.y; });
+          .attr("cx", function(d) { return d.x; })
+          .attr("transform", function(d){
+            d.x =  d.x;
+            d.y =  d.y;
+            return "translate(" + d.x + "," + d.y + ")";
+          });
         }
-    }
 
-    function dragstarted(d) {
-      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
+        function dragstarted(d) {
+          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
 
-    function dragged(d) {
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
-    }
+        function dragged(d) {
+          d.fx = d3.event.x;
+          d.fy = d3.event.y;
+        }
 
-    function dragended(d) {
-      if (!d3.event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
+        function dragended(d) {
+          if (!d3.event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
     }
 
 </script>
