@@ -65,7 +65,7 @@
           .append("line")
           .attr("class", "link-line")
           .style("stroke-width", function (d) {
-              return Math.sqrt(d.value);
+              return 3;
           });
 
 
@@ -106,7 +106,7 @@ simulation
       .call(d3.drag()
               .on("start", dragstarted)
               .on("drag", dragged)
-              .on("end", dragended));
+              .on("end", dragended)).on("mouseover", highlight(.1)).on("mouseout", highlight(1));
 
   inNode.append("svg:circle")
       .attr("r", function(d) { return 20; })
@@ -129,14 +129,11 @@ simulation
       .links(data_json.links);
 node = svg.selectAll("g.node");
       function ticked() {
-
           link
               .attr("x1", function(d) {return d.source.x; })
               .attr("y1", function(d) { return d.source.y; })
               .attr("x2", function(d) { return d.target.x; })
               .attr("y2", function(d) { return d.target.y; });
-
-
 
               linkText
                       .attr("x", function(d) {
@@ -171,9 +168,22 @@ node = svg.selectAll("g.node");
           d.fx = null;
           d.fy = null;
         }
+
+        function highlight(opacity) {
+          return function(d, i) {
+            link.style("stroke-opacity", opacity).style("stroke-opacity", function(o) {
+                return o.source === d || o.target === d ? 1 : opacity;
+            });
+
+            linkText.style("opacity", opacity).style("opacity", function(o) {
+              return o.source === d || o.target === d ? 1 : opacity;
+            }).style("font-size", function(o) {
+              return o.source === d || o.target === d ? "18px" : "12px";
+            });
+          };
+      }
     }
 
 </script>
-
 </body>
 </html>

@@ -16,3 +16,10 @@
 .node:hover .label {
   display: block;
 }
+
+.node text {
+  fill: #9b0101;
+  font-size: 16px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
