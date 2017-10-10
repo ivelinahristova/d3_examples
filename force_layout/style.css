@@ -7,3 +7,12 @@
   stroke: #fff;
   stroke-width: 1.5px;
 }
+
+.label {
+  display: none;
+
+}
+
+.node:hover .label {
+  display: block;
+}

@@ -119,7 +119,10 @@ simulation
         .attr("height", 50)
         .attr("width", 50);
 
-  node.append("title")
+  inNode.append("text")
+  .attr("class", "label")
+  .attr("dy", "10px")
+  .attr("dx", "40px")
       .text(function(d) { return d.id; });
 
   simulation.force("link")
