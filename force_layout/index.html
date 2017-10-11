@@ -25,6 +25,7 @@
   d3.csv('twin_cities.csv', function(dataset){
     data = dataset;
 
+    //Normalize data and fit in json format
     for (var i = 0; i < data.length; i++) {
       for (var k in data[i]){
           if (data[i].hasOwnProperty(k)) {
@@ -35,11 +36,14 @@
       }
       data_json["nodes"].push({"id": data[i]['Name']});
     }
+
+    //Create force layout diagram
     createForceLayoutChart();
   });
 
   var createForceLayoutChart = function() {
-  var color = d3.scaleOrdinal(d3.schemeCategory20);
+  var color = d3.scaleOrdinal(d3.schemeCategory10);
+
 
   var simulation = d3.forceSimulation()
       .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(function(d) {return 350;}).strength(0.5))
@@ -47,6 +51,7 @@
       .force("center", d3.forceCenter(width / 2, height / 2))
       .nodes(data_json.nodes);
 
+  //Create group elements, containing the actual link line element and a corresponding label
   var link = svg.selectAll(".link")
       .data(data_json.links)
       .enter()
@@ -59,7 +64,7 @@
       });
 
 
-  // Append text to Link edges
+  // Append label to the link edges
   var linkText = svg.selectAll(".link")
     .append("text")
     .attr("font-family", "Arial, Helvetica, sans-serif")
@@ -72,6 +77,7 @@
     .nodes(data_json.nodes)
     .on("tick", ticked);
 
+  //Create group element containing a circle, image and label for the node
   var node = svg.selectAll("g.node")
     .data(data_json.nodes, function(d) { return d.id; });
 
@@ -105,6 +111,7 @@
 
   node = svg.selectAll("g.node");
 
+  //Position links and nodes
   function ticked() {
       link
           .attr("x1", function(d) {return d.source.x; })
@@ -114,7 +121,7 @@
 
       linkText
           .attr("x", function(d) {
-              return ((d.source.x + d.target.x)/2);
+              return ((d.source.x + d.target.x)/2 + 10);
           })
           .attr("y", function(d) {
               return ((d.source.y + d.target.y)/2);
@@ -146,16 +153,21 @@
       d.fy = null;
     }
 
+    //Highlight linked lines and their labels
     function highlight(opacity) {
       return function(d, i) {
         link.style("stroke-opacity", opacity).style("stroke-opacity", function(o) {
-            return o.source === d || o.target === d ? 1 : opacity;
+            return o.source === d || o.target === d ? 0.8 : opacity;
+        }).style("stroke", function(o, i) {
+          return o.source === d || o.target === d ? color(i) : "#999";
         });
 
         linkText.style("opacity", opacity).style("opacity", function(o) {
           return o.source === d || o.target === d ? 1 : opacity;
         }).style("font-size", function(o) {
           return o.source === d || o.target === d ? "18px" : "12px";
+        }).style("fill", function(o, i) {
+          return o.source === d || o.target === d ? color(i) : "#000";
         });
       };
   }

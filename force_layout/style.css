@@ -3,6 +3,10 @@
   stroke-opacity: 0.6;
 }
 
+.link text {
+  font-family: Verdana;
+}
+
 .nodes circle {
   stroke: #fff;
   stroke-width: 1.5px;
