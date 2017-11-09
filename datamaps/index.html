@@ -2,10 +2,17 @@
 <head>
     <meta charset="utf-8">
 
-<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
 <script src="http://datamaps.github.io/scripts/0.4.4/datamaps.world.min.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <style>
+      #map {
+        height: 500px;
+        width: 500px;
+        position: relative;
+      }
+    </style>
 </head>
 
 <body>
@@ -13,17 +20,34 @@
 <div id="map"></div>
 
 <script>
-var svg = d3.select("#map").append("svg")
-    .attr("width", 500)
-    .attr("height", 500);
 
-d3.json("bulgaria_regions.topojson", function(error, uk) {
-  if (error) return console.error(error);
-  console.log(uk);
-  svg.append("path")
-      .datum(topojson.feature(uk, uk.objects.BGR_adm2))
-      .attr("d", d3.geo.path().projection(d3.geo.mercator()));
-});
+var map = new Datamap({
+        element: document.getElementById('map'),
+        geographyConfig: {
+            dataUrl: 'bulgaria_regions.json',
+            popupTemplate: function(geo, data) {
+                return ['<div class="hoverinfo"><strong>',
+                        'Oblast ' + geo.properties.NAME_1,
+                        ', Obshtina ' + geo.properties.NAME_2,
+                        '</strong></div>'].join('');
+            }
+        },
+        scope: 'subunits',
+        setProjection: function(element, options) {
+            var projection, path;
+            console.log(element.offsetWidth);
+            projection = d3.geo.mercator()
+            .center([29.943748092651424,
+      42.234809875488395])
+            .rotate([4.4, 0])
+            .scale(4000)
+            .translate([element.offsetWidth / 2,
+      element.offsetHeight / 2]);
+            path = d3.geo.path().projection( projection );
+
+            return {path: path, projection: projection};
+          }
+    });
 
 </script>
 
