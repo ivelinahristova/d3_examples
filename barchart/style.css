@@ -32,3 +32,11 @@ text.legend.selected {
 #chart {
     padding: 50px;
 }
+
+.visible {
+    display: block;
+}
+
+.nonvisible {
+    display: none;
+}
