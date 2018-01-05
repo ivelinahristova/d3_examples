@@ -1,0 +1,72 @@
+<head>
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.3.0.min.js"></script>
+  <style>
+	tr td, tr th {
+		border: 2px solid #bbb;
+	}
+	
+	h2 {
+	text-align: center;
+	}
+	
+	table {
+	margin: 0 auto;
+	}
+  </style>
+</head>
+<body>
+	<h2>Me & Kirsten - LinkedIn Comparisson</h2>
+	<table>
+	<thead>
+	<tr>
+	<th>Views</th>
+	<th>Connections</th>
+	<th>Skills</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+	<td class="views">
+	
+	</td>
+	<td class="connections">
+	
+	</td>
+	<td class="skills">
+	
+	</td>
+	</tr>
+	</tbody>
+	</table>
+  <script type="text/javascript">
+    var svgViews = dimple.newSvg(".views", 300, 200);
+    var data = [
+      { "Title":"Me", "Views":150, "Connections":326, "Skills":15 },
+      { "Title":"Kirsten", "Views":99, "Connections":210, "Skills":20 }
+    ];
+    var chartViews = new dimple.chart(svgViews, data);
+    var axisViews = chartViews.addCategoryAxis("x", "Title");
+    chartViews.addMeasureAxis("y", "Views");
+    var seriesViews = chartViews.addSeries(null, dimple.plot.bar);
+	
+	axisViews.addOrderRule("Title", true);
+    chartViews.draw();
+	
+	var svgConnections = dimple.newSvg(".connections", 300, 200);
+	var chartConnections = new dimple.chart(svgConnections, data);
+    var axisConnections = chartConnections.addCategoryAxis("x", "Title");
+    chartConnections.addMeasureAxis("y", "Connections");
+    var seriesConnections = chartConnections.addSeries(null, dimple.plot.bar);
+	axisConnections.addOrderRule("Title", true);
+    chartConnections.draw();
+	
+	var svgSkills = dimple.newSvg(".skills", 300, 200);
+	var chartSkills = new dimple.chart(svgSkills, data);
+    var axisSkills = chartSkills.addCategoryAxis("x", "Title");
+    chartSkills.addMeasureAxis("y", "Skills");
+    var seriesSkills = chartSkills.addSeries(null, dimple.plot.bar);
+	axisSkills.addOrderRule("Title", true);
+    chartSkills.draw();
+  </script>
+</body>
